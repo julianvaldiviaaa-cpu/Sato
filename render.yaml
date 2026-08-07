@@ -1,0 +1,67 @@
+# =====================================================================
+#  Configuracion de Render (render.yaml) - Despliegue Blueprint
+#  Un solo web service que sirve la web Y los WebSockets de Reverb
+#  (Render envia todo el trafico publico por un unico puerto $PORT).
+# =====================================================================
+services:
+  - type: web
+    name: sato-app
+    runtime: docker
+    repo: https://github.com/julianvaldiviaaa-cpu/Sato
+    plan: free
+    region: oregon
+    healthCheckPath: /up
+    dockerContext: .
+    dockerfilePath: ./docker/Dockerfile
+    buildCommand: ""
+    # Corre el modo "render" del entrypoint (nginx + php-fpm + reverb)
+    startCommand: render
+    # VITE_* vacios -> bootstrap.ts cae a window.location (mismo host, https)
+    dockerBuildArgs:
+      VITE_APP_NAME: "Sato"
+      VITE_REVERB_HOST: ""
+      VITE_REVERB_PORT: ""
+      VITE_REVERB_SCHEME: "https"
+      VITE_REVERB_APP_KEY: "sato-local-key"
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        sync: false            # rellenada en el dashboard (php artisan key:generate)
+      - key: APP_URL
+        sync: false            # rellenada con la URL publica de Render
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        sync: false            # tu cadena de conexion Neon
+      - key: BROADCAST_CONNECTION
+        value: reverb
+      - key: REVERB_APP_ID
+        value: local
+      - key: REVERB_APP_KEY
+        value: sato-local-key
+      - key: REVERB_APP_SECRET
+        value: sato-local-secret
+      # Internos (el WS publico lo sirve nginx sobre el mismo $PORT)
+      - key: REVERB_HOST
+        value: 127.0.0.1
+      - key: REVERB_PORT
+        value: "8080"
+      - key: REVERB_SCHEME
+        value: http
+      - key: REVERB_SERVER_HOST
+        value: 0.0.0.0
+      - key: REVERB_SERVER_PORT
+        value: "8080"
+      # Servidor de email (Resend)
+      - key: MAIL_MAILER
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: Sato

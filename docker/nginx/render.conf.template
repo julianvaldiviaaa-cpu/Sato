@@ -1,0 +1,68 @@
+# =====================================================================
+#  NGINX para Render (single container). Se genera a partir de esta
+#  plantilla en el entrypoint sustituyendo $PORT (Render le pasa PORT).
+#  Un solo contenedor: nginx + php-fpm + reverb (todo por el mismo puerto).
+# =====================================================================
+server {
+    listen $PORT default_server;
+    server_name _;
+
+    root /var/www/html/public;
+    index index.php;
+
+    client_max_body_size 25M;
+
+    # Healthcheck para Render
+    location = /up {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    # WebSocket de Reverb: proxy de upgrade hacia el servidor Reverb interno
+    location /app {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+    }
+
+    # HTTP API de Reverb (broadcast) desde la propia app
+    location /apps {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    # Assets compilados por Vite
+    location ~* \.(?:css|js|jpg|jpeg|gif|png|svg|webp|ico|woff2?)$ {
+        expires 7d;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+        access_log off;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+
+    gzip on;
+    gzip_vary on;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/javascript application/javascript application/json image/svg+xml;
+}

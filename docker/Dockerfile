@@ -79,9 +79,14 @@ FROM php-base AS runner
 
 WORKDIR /var/www/html
 
+# nginx + envsubst para el modo "render" (un solo contenedor en Render)
+RUN apk add --no-cache nginx gettext
+
 # Configuracion PHP / PHP-FPM
 COPY docker/php/zz-sato.ini    /usr/local/etc/php/conf.d/zz-sato.ini
 COPY docker/php/zz-www.conf    /usr/local/etc/php-fpm.d/zz-www.conf
+# Plantilla de nginx para Render (se genera en el entrypoint con $PORT)
+COPY docker/nginx/render.conf.template /etc/nginx/conf.d/render.conf.template
 
 # Codigo de la app (respetando .dockerignore)
 COPY . .
