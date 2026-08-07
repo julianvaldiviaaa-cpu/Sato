@@ -11,12 +11,14 @@ prepare_app() {
     echo "[sato-entrypoint] Preparando la aplicacion Laravel..."
 
     if [ -n "$DB_URL" ]; then
-        echo "[sato-entrypoint] Esperando conexion a la base de datos (${DB_URL%%?*})..."
+        echo "[sato-entrypoint] Esperando conexion a la base de datos..."
         i=0
-        until php artisan migrate:status --no-interaction >/dev/null 2>&1; do
+        until php artisan migrate:status --no-interaction >/tmp/dbcheck.log 2>&1; do
             i=$((i+1))
             if [ "$i" -ge 60 ]; then
                 echo "[sato-entrypoint] ERROR: no se pudo conectar a la base de datos tras 60 intentos." >&2
+                echo "[sato-entrypoint] Ultimo error de la base de datos:" >&2
+                tail -n 15 /tmp/dbcheck.log >&2
                 exit 1
             fi
             echo "[sato-entrypoint] DB no lista (intento $i), reintentando en 2s..."
