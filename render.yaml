@@ -12,7 +12,7 @@ services:
     region: oregon
     healthCheckPath: /up
     dockerContext: .
-    dockerfilePath: ./docker/Dockerfile
+    dockerfilePath: ./Dockerfile
     buildCommand: ""
     # Corre el modo "render" del entrypoint (nginx + php-fpm + reverb).
     # Para runtime docker se usa dockerCommand (no startCommand).

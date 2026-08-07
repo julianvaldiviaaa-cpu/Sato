@@ -2,7 +2,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
       args:
         VITE_APP_NAME: ${VITE_APP_NAME:-Sato}
         VITE_REVERB_HOST: ${VITE_REVERB_HOST:-localhost}

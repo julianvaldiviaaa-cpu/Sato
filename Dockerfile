@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1.4
 # =====================================================================
-#  Laravel Sato - Dockerfile de produccion (multi-stage)
+#  Laravel Sato - Dockerfile de produccion (multi-stage) (en la raiz
+#  para que Render/Docker lo encuentren por defecto como ./Dockerfile).
+#  Los COPY-* son relativos al CONTEXTO (raiz del repo = docker/...).
 # =====================================================================
 
 # ---------------------------------------------------------------------
