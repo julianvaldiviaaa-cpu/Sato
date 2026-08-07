@@ -14,15 +14,9 @@ services:
     dockerContext: .
     dockerfilePath: ./docker/Dockerfile
     buildCommand: ""
-    # Corre el modo "render" del entrypoint (nginx + php-fpm + reverb)
-    startCommand: render
-    # VITE_* vacios -> bootstrap.ts cae a window.location (mismo host, https)
-    dockerBuildArgs:
-      VITE_APP_NAME: "Sato"
-      VITE_REVERB_HOST: ""
-      VITE_REVERB_PORT: ""
-      VITE_REVERB_SCHEME: "https"
-      VITE_REVERB_APP_KEY: "sato-local-key"
+    # Corre el modo "render" del entrypoint (nginx + php-fpm + reverb).
+    # Para runtime docker se usa dockerCommand (no startCommand).
+    dockerCommand: render
     autoDeploy: true
     envVars:
       - key: APP_ENV

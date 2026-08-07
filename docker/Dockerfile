@@ -58,12 +58,14 @@ RUN mkdir -p bootstrap/cache storage/framework/views storage/logs
 
 RUN npm ci --no-audit --no-fund
 
-# Variables inyectadas por Vite en el bundle (build-time)
+# Variables inyectadas por Vite en el bundle (build-time).
+# VACIAS por defecto -> bootstrap.ts cae a window.location (mismo host/esquema).
+# docker-compose las sobreescribe con localhost:8080 al buildear.
 ARG VITE_APP_NAME="Sato"
-ARG VITE_REVERB_HOST="localhost"
-ARG VITE_REVERB_PORT="8080"
-ARG VITE_REVERB_SCHEME="http"
-ARG VITE_REVERB_APP_KEY="key"
+ARG VITE_REVERB_HOST=""
+ARG VITE_REVERB_PORT=""
+ARG VITE_REVERB_SCHEME=""
+ARG VITE_REVERB_APP_KEY="sato-local-key"
 ENV VITE_APP_NAME="${VITE_APP_NAME}" \
     VITE_REVERB_HOST="${VITE_REVERB_HOST}" \
     VITE_REVERB_PORT="${VITE_REVERB_PORT}" \
