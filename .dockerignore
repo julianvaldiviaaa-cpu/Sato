@@ -1,0 +1,41 @@
+# Dependencias / entornos que NO van a la imagen final
+.git
+.gitignore
+node_modules
+vendor
+public/build
+public/hot
+public/storage
+storage/*.key
+storage/pail
+storage/logs/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing/*
+bootstrap/cache/*.php
+bootstrap/ssr
+
+# Secretos y configuracion local
+.env
+.env.backup
+.env.production
+auth.json
+*.local
+
+# Herramientas / IDE
+.phpunit.cache
+.phpunit.result.cache
+.phpactor.json
+Homestead.json
+Homestead.yaml
+.phpstorm.meta.php
+.idea
+.vscode
+.zed
+
+# Docs y artefactos de prueba (no necesarios en runtime)
+docker-compose.yml
+README-DESPLIEGUE.md
+
+# Clip/helpers (si los hubiera)

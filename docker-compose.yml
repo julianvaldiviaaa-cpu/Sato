@@ -1,0 +1,97 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        VITE_APP_NAME: ${VITE_APP_NAME:-Sato}
+        VITE_REVERB_HOST: ${VITE_REVERB_HOST:-localhost}
+        VITE_REVERB_PORT: ${VITE_REVERB_PORT:-8080}
+        VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME:-http}
+        VITE_REVERB_APP_KEY: ${VITE_REVERB_APP_KEY:-key}
+
+    image: sato-app:latest
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      BROADCAST_CONNECTION: reverb
+      REVERB_HOST: reverb
+      REVERB_PORT: 8080
+      REVERB_SCHEME: http
+
+    volumes:
+      - storage_data:/var/www/html/storage
+      - build_assets:/var/www/html/public/build
+
+    networks:
+      - sato-net
+
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "php-fpm"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+
+    ports:
+      - "8000:80"
+
+    volumes:
+      - .:/var/www/html
+      - storage_data:/var/www/html/storage
+      - build_assets:/var/www/html/public/build
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+    depends_on:
+      app:
+        condition: service_healthy
+
+    networks:
+      - sato-net
+
+  reverb:
+    image: sato-app:latest
+    command: ["reverb"]
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      # Bind del servidor dentro del contenedor (accesible desde fuera via puerto publicado)
+      REVERB_SERVER_HOST: 0.0.0.0
+      REVERB_SERVER_PORT: "8080"
+      # Host/scheme publico que usan los clientes/browser
+      REVERB_HOST: ${REVERB_HOST:-localhost}
+      REVERB_PORT: "8080"
+      REVERB_SCHEME: ${REVERB_SCHEME:-http}
+      REVERB_APP_ID: ${REVERB_APP_ID:-local-id}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-local-secret}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-sato-local-key}
+
+    depends_on:
+      app:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"
+
+    networks:
+      - sato-net
+
+volumes:
+  storage_data:
+  # Volumen de assets compilados (lo sembra "app" en el entrypoint; lo lee "nginx")
+  build_assets:
+
+networks:
+  sato-net:
+    driver: bridge
